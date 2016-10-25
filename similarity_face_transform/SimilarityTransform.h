@@ -42,6 +42,7 @@ cv::Mat calcSimilarityTransform( const cv::vector<cv::Point2f>& points,  const c
     cv::Mat mat         = cv::Mat( points ).clone();
     cv::Mat ref         = cv::Mat( refPoints).clone();
     recenter( mat );
+    recenter( ref );
     cv::Mat rotation    = rotateScaleAlign( mat, ref );
 
     cv::Mat rigid_transform;
@@ -59,10 +60,10 @@ cv::Mat calcSimilarityTransform( const cv::vector<cv::Point2f>& points,  const c
     float tx = 0.f;
     float ty = 0.f;
     for (int i = 0; i < mat.rows; ++i) {
-        float ttx = ref.at<cv::Point2f>(i, 0).x -
+        float ttx = refPoints[i].x -
         kcos_theta * points[i].x +
         ksin_theta * points[i].y;
-        float tty = ref.at<cv::Point2f>(i, 0).y -
+        float tty = refPoints[i].y -
         ksin_theta * points[i].x -
         kcos_theta * points[i].y;
         tx += ttx;
