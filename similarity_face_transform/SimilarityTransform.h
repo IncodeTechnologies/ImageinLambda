@@ -1,13 +1,5 @@
-//
-//  SimilarityTransform.h
-//  NonRigidFaceTracking
-//
-//  Created by Saburo Okita on 11/04/14.
-//  Copyright (c) 2014 Saburo Okita. All rights reserved.
-//
-
-#ifndef __NonRigidFaceTracking__SimilarityTransform__
-#define __NonRigidFaceTracking__SimilarityTransform__
+#ifndef _SIMILARITY_TRANSFORM_H_
+#define _SIMILARITY_TRANSFORM_H_
 
 #include <opencv2/opencv.hpp>
 
@@ -78,4 +70,4 @@ cv::Mat calcSimilarityTransform( const cv::vector<cv::Point2f>& points,  const c
     return rigid_transform;
 }
 
-#endif /* defined(__NonRigidFaceTracking__SimilarityTransform__) */
+#endif // _SIMILARITY_TRANSFORM_H_

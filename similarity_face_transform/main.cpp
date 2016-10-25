@@ -1,11 +1,3 @@
-//
-//  main.cpp
-//  face_transform
-//
-//  Created by Alexey Golunov on 20/10/2016.
-//  Copyright © 2016 Alexey Golunov. All rights reserved.
-//
-
 #include <iostream>
 #include <opencv2/opencv.hpp>
 #include "SimilarityTransform.h"
