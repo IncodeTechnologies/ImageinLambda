@@ -8,6 +8,9 @@
 
 #include <iostream>
 #include <opencv2/opencv.hpp>
+#include "SimilarityTransform.h"
+
+using namespace cv;
 
 cv::Size imgSize = {96, 112};
 std::vector<cv::Point2f> coord5points = {
@@ -19,9 +22,15 @@ std::vector<cv::Point2f> coord5points = {
 };
 
 cv::Mat transform_face(cv::Mat img, const std::vector<cv::Point2f>& img5Points) {
-    cv::Mat similarityTransMat = cv::estimateRigidTransform(img5Points, coord5points, false);
+    cv::Mat aT = calcSimilarityTransform(img5Points, coord5points);
+    for (int i = 0; i < aT.rows; ++i) {
+        for (int j = 0; j < aT.cols; ++j) {
+            std::cout << aT.at<float>(i,j) << " ";
+        }
+        std::cout << std::endl;
+    }
     cv::Mat dstImg;
-    cv::warpAffine(img, dstImg, similarityTransMat, imgSize);
+    cv::warpAffine(img, dstImg, aT, imgSize);
     return dstImg;
 }
 
