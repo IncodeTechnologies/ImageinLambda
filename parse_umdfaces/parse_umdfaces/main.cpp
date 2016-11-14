@@ -73,12 +73,12 @@ struct UMDImageInfo {
     std::vector<cv::Point2f> points;
 
     UMDImageInfo() = default;
-    UMDImageInfo(const std::string& str, const std::string& imagesPath) {
+    UMDImageInfo(const std::string& str, const std::string& imagesPath, int offset) {
         auto vecOfValues = split(str, ',');
         if (vecOfValues.size() < 76) {
             throw std::string("Error: invalid input string");
         }
-        personID = std::stoi(vecOfValues[0]) - 1;
+        personID = std::stoi(vecOfValues[0]) - 1 + offset;
         fileName = imagesPath + vecOfValues[1];
         faceRect.x = std::stof(vecOfValues[4]);
         faceRect.y = std::stof(vecOfValues[5]);
@@ -97,12 +97,13 @@ struct UMDImageInfo {
 void parseCSV(const std::string& csvFilePath,
               const std::string& imagesPath,
               std::map<int, std::vector<UMDImageInfo>>& result) {
+    int offset = result.size();
     std::ifstream ifs(csvFilePath);
     while (ifs.good()) {
         try {
             std::string str = "";
             std::getline(ifs, str);
-            UMDImageInfo iinf(str, imagesPath);
+            UMDImageInfo iinf(str, imagesPath, offset);
             result[iinf.personID].push_back(iinf);
             std::cout << iinf.personID << " " << iinf.fileName << std::endl;
         } catch (...) {
@@ -127,7 +128,7 @@ int main(int argc, const char * argv[]) {
     for (size_t i = 0; i < csvFilePaths.size(); ++i) {
         parseCSV(csvFilePaths[i], imagesPaths[i], umdImages);
     }
-
+    std::cout << umdImages.size() << std::endl;
     for (auto it = umdImages.begin(); it != umdImages.end(); ++it) {
         std::string personID = getStringID(it->first, 7);
         for (size_t i = 0; i < it->second.size(); ++i) {
