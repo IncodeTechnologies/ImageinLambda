@@ -87,7 +87,7 @@ struct UMDImageInfo {
 
         for (int i = 0; i < 21; ++i) {
             float conf = std::stof(vecOfValues[11 + 3 * i + 2]);
-            if ((i == 7 || i == 10 || i == 14 || i == 17 || i == 19) && conf < 0.5f) {
+            if ((i == 7 || i == 10 || i == 14 || i == 17 || i == 19) && conf < 0.9f) {
                 throw std::string("Error: bad point prediction");
             }
             cv::Point2f p;
