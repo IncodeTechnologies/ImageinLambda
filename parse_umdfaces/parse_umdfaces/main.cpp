@@ -86,6 +86,9 @@ struct UMDImageInfo {
         faceRect.height = std::stof(vecOfValues[7]);
 
         for (int i = 0; i < 21; ++i) {
+            if (std::stof(vecOfValues[11 + 3 * i + 2]) < 0.5f) {
+                throw std::string("Error: bad point prediction");
+            }
             cv::Point2f p;
             p.x = std::stof(vecOfValues[11 + 3 * i + 0]);
             p.y = std::stof(vecOfValues[11 + 3 * i + 1]);
@@ -129,6 +132,7 @@ int main(int argc, const char * argv[]) {
         parseCSV(csvFilePaths[i], imagesPaths[i], umdImages);
     }
     std::cout << umdImages.size() << std::endl;
+    int imgsCount = 0;
     for (auto it = umdImages.begin(); it != umdImages.end(); ++it) {
         std::string personID = getStringID(it->first, 7);
         for (size_t i = 0; i < it->second.size(); ++i) {
@@ -142,6 +146,10 @@ int main(int argc, const char * argv[]) {
             cv::Mat alignedImg = alignFace(img, iinf.points);
             std::string outFileName = outImagePath + personID + std::string("_") + imageID + std::string(".jpg");
             cv::imwrite(outFileName, alignedImg);
+            ++imgsCount;
+            if (imgsCount % 1000 == 0) {
+                std::cout << imgsCount << std::endl;
+            }
         }
     }
 
