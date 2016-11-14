@@ -18,7 +18,35 @@ const int ec_mc_y = 48;
 const int ec_y = 48;
 const cv::Size outSize(128, 128);
 
-inline cv::Mat alignFace(cv::Mat img, const std::vector<cv::Point2f>& pts) {
+const int CROPPED_IMG_SIZE = 300;
+
+cv::Mat cropImage(cv::Mat img, cv::Rect r) {
+    int maxSide = std::max(r.width, r.height);
+    r.x -= (maxSide - r.width) / 2.f;
+    r.width = maxSide;
+    r.y -= (maxSide - r.height) / 2.f;
+    r.height = maxSide;
+    int rx = r.x - r.width / 2.f;
+    int ry = r.y - r.height / 2.f;
+    int rw = r.width * 2;
+    int rh = r. height * 2;
+    cv::Mat m = cv::Mat::zeros(rh, rw, img.type());
+    int dx = std::abs(std::min(0, rx));
+    if (dx > 0) { rx = 0; }
+    rw -= dx;
+    int dy = std::abs(std::min(0, ry));
+    if (dy > 0) { ry = 0; }
+    rh -= dy;
+    int dw = std::abs(std::min(0, img.cols - 1 - (rx + rw)));
+    rw -= dw;
+    int dh = std::abs(std::min(0, img.rows - 1 - (ry + rh)));
+    rh -= dh;
+    img(cv::Range(ry, ry + rh), cv::Range(rx, rx + rw)).copyTo(m(cv::Range(dy, dy + rh), cv::Range(dx, dx + rw)));
+    cv::resize(m, m, cv::Size(CROPPED_IMG_SIZE, CROPPED_IMG_SIZE));
+    return m;
+}
+
+cv::Mat alignFace(cv::Mat img, const std::vector<cv::Point2f>& pts) {
 
     cv::Point2f rEyeC(pts[7].x, pts[7].y);
     cv::Point2f lEyeC(pts[10].x, pts[10].y);
@@ -78,6 +106,9 @@ struct UMDImageInfo {
         if (vecOfValues.size() < 76) {
             throw std::string("Error: invalid input string");
         }
+        if (std::stof(vecOfValues[3]) < 0.9f) {
+            throw std::string("Error: confidence is too low");
+        }
         personID = std::stoi(vecOfValues[0]) - 1 + offset;
         fileName = imagesPath + vecOfValues[1];
         faceRect.x = std::stof(vecOfValues[4]);
@@ -86,10 +117,6 @@ struct UMDImageInfo {
         faceRect.height = std::stof(vecOfValues[7]);
 
         for (int i = 0; i < 21; ++i) {
-            float conf = std::stof(vecOfValues[11 + 3 * i + 2]);
-            if ((i == 7 || i == 10 || i == 14 || i == 17 || i == 19) && conf < 0.9f) {
-                throw std::string("Error: bad point prediction");
-            }
             cv::Point2f p;
             p.x = std::stof(vecOfValues[11 + 3 * i + 0]);
             p.y = std::stof(vecOfValues[11 + 3 * i + 1]);
@@ -101,7 +128,7 @@ struct UMDImageInfo {
 void parseCSV(const std::string& csvFilePath,
               const std::string& imagesPath,
               std::map<int, std::vector<UMDImageInfo>>& result) {
-    int offset = result.size();
+    int offset = static_cast<int>(result.size());
     std::ifstream ifs(csvFilePath);
     while (ifs.good()) {
         try {
@@ -144,7 +171,8 @@ int main(int argc, const char * argv[]) {
                 std::cout << "Error: invalid image" << std::endl;
                 continue;
             }
-            cv::Mat alignedImg = alignFace(img, iinf.points);
+            cv::Mat alignedImg = cropImage(img, iinf.faceRect);
+            //cv::Mat alignedImg = alignFace(img, iinf.points);
             std::string outFileName = outImagePath + personID + std::string("_") + imageID + std::string(".jpg");
             cv::imwrite(outFileName, alignedImg);
             ++imgsCount;
